@@ -3,15 +3,7 @@ fun main() {
     fun part1(input: List<String>): Int {
         var result = 0
         input.forEach { bank ->
-            var max1 = bank[bank.length - 1]
-            var max2 = bank[bank.length - 2]
-            for (i in bank.length - 3 downTo 0) {
-                if (bank[i].code >= max2.code) {
-                    if (max2.code >= max1.code) max1 = max2
-                    max2 = bank[i]
-                }
-            }
-            result += "$max2$max1".toInt()
+            result += maxSubsequence(bank, 2).toInt()
         }
         return result
     }
@@ -19,13 +11,7 @@ fun main() {
     fun part2(input: List<String>): Long {
         var result = 0L
         input.forEach { bank ->
-            var max = bank.takeLast(12)
-            for (i in bank.length - 13 downTo 0) {
-                if (bank[i].code >= max[0].code) {
-                    max = recalculateMax(max, bank[i])
-                }
-            }
-            result += max.toLong()
+            result += maxSubsequence(bank, 12).toLong()
         }
         return result
     }
@@ -39,15 +25,16 @@ fun main() {
     part2(input).println()
 }
 
-private fun recalculateMax(input: String, value: Char): String {
-    val max = StringBuilder(input)
-    var current: Char = value
-    for (i in max.indices) {
-        if (current.code >= max[i].code) {
-            max[i] = current.also { current = max[i] }
-        } else {
-            break
+/** Largest k-digit number obtainable by deleting characters from [bank] while keeping order. */
+private fun maxSubsequence(bank: String, k: Int): String {
+    var toDrop = bank.length - k
+    val stack = ArrayDeque<Char>()
+    for (char in bank) {
+        while (toDrop > 0 && stack.isNotEmpty() && stack.last() < char) {
+            stack.removeLast()
+            toDrop--
         }
+        stack.addLast(char)
     }
-    return max.toString()
+    return stack.take(k).joinToString("")
 }
